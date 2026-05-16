@@ -8,195 +8,202 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <style>
-    :root { --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); --card-bg: rgba(255, 255, 255, 0.9); --text-main: #050a30; --text-sub: #4a5568; --accent: #0f2fd8; --border: #e2e8f0; --input-bg: #ffffff; --shadow: 0 20px 40px rgba(0,0,0,0.06); }
-    body.dark-mode { --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); --card-bg: rgba(30, 41, 59, 0.85); --text-main: #f1f5f9; --text-sub: #94a3b8; --accent: #38bdf8; --border: #334155; --input-bg: #0f172a; --shadow: 0 20px 40px rgba(0,0,0,0.4); }
+    :root { --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); --card-bg: rgba(255, 255, 255, 0.9); --text-main: #050a30; --text-sub: #4a5568; --accent: #0f2fd8; --border: #e2e8f0; --input-bg: #ffffff; --shadow: 0 20px 50px rgba(5, 10, 48, 0.05); --balance-bg: #f8fafc; --balance-border: #e2e8f0; }
+    body.dark-mode { --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); --card-bg: rgba(30, 41, 59, 0.85); --text-main: #f1f5f9; --text-sub: #94a3b8; --accent: #38bdf8; --border: #334155; --input-bg: #0f172a; --shadow: 0 20px 50px rgba(0,0,0,0.3); --balance-bg: #1e293b; --balance-border: #334155; }
     * { box-sizing: border-box; transition: all 0.25s ease; }
-    body { margin: 0; padding: 30px 20px; background: var(--bg-gradient); background-attachment: fixed; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text-main); display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
-    .app-card { background: var(--card-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 24px; padding: 40px; width: 100%; max-width: 750px; box-shadow: var(--shadow); }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
-    .header h1 { font-size: 24px; margin: 0; font-weight: 800; display: flex; align-items: center; gap: 12px; }
-    .satset-logo { width: 38px; height: 38px; flex-shrink: 0; border-radius: 50%; box-shadow: 0 4px 10px rgba(32, 34, 242, 0.2); }
-    .theme-btn { width: 44px; height: 44px; border-radius: 12px; background: var(--border); color: var(--text-main); display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; font-size: 16px; }
+    body { margin: 0; padding: 40px 20px; background: var(--bg-gradient); background-attachment: fixed; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .app-workspace { background: var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border); border-radius: 32px; padding: 45px; width: 100%; max-width: 1150px; box-shadow: var(--shadow); display: grid; grid-template-columns: 1fr 1.4fr; gap: 45px; }
+    .panel-brand { display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid var(--border); padding-right: 45px; }
+    .brand-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; }
+    .brand-title h1 { font-size: 26px; margin: 0; font-weight: 800; display: flex; align-items: center; gap: 14px; }
+    .satset-logo { width: 42px; height: 42px; flex-shrink: 0; border-radius: 50%; box-shadow: 0 4px 14px rgba(32, 34, 242, 0.2); }
+    .theme-btn { width: 44px; height: 44px; border-radius: 14px; background: var(--border); color: var(--text-main); display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; font-size: 16px; }
     .theme-btn:hover { transform: scale(1.05); }
-    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .balance-wrapper { margin-top: auto; margin-bottom: auto; padding: 25px 0; }
+    .balance-box { background: var(--balance-bg); border: 2px solid var(--balance-border); border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 10px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.01); position: relative; overflow: hidden; }
+    .balance-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--sub); display: flex; align-items: center; gap: 6px; }
+    .balance-port-name { color: var(--accent); }
+    .balance-amount { font-size: 28px; font-weight: 900; color: var(--text-main); letter-spacing: -0.5px; word-break: break-all; }
+    .critical-alert { background: #fee2e2; color: #b91c1c; font-size: 12px; font-weight: 700; padding: 8px 12px; border-radius: 8px; display: flex; align-items: center; gap: 6px; margin-top: 5px; animation: pulse 2s infinite; display: none; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+    .brand-footer { font-size: 12px; color: var(--sub); opacity: 0.7; font-weight: 500; margin-top: 30px; }
+    .panel-form { display: flex; flex-direction: column; justify-content: center; }
+    .grid-form { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
     .form-group { display: flex; flex-direction: column; }
     .full-width { grid-column: span 2; }
-    label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 8px; color: var(--sub); }
-    input, select, textarea { background: var(--input-bg); border: 2px solid var(--border); border-radius: 12px; padding: 12px 16px; color: var(--text-main); font-size: 15px; width: 100%; }
-    input:focus, select:focus, textarea:focus { border-color: var(--accent); outline: none; }
+    label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; color: var(--sub); }
+    input, select, textarea { background: var(--input-bg); border: 2px solid var(--border); border-radius: 14px; padding: 14px 16px; color: var(--text-main); font-size: 15px; width: 100%; font-weight: 500; }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 4px rgba(15, 47, 216, 0.05); }
     .custom-input { margin-top: 10px; border-style: dashed; background: transparent; }
     .rupiah-wrapper { position: relative; display: flex; align-items: center; }
-    .rupiah-wrapper span { position: absolute; left: 16px; font-weight: 600; color: var(--sub); }
-    .rupiah-wrapper input { padding-left: 45px; }
-    .submit-btn { background: var(--accent); color: white; border: none; padding: 16px; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 25px; letter-spacing: 0.5px; box-shadow: 0 8px 20px rgba(15, 47, 216, 0.15); }
-    .submit-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
-    .submit-btn:disabled { background: #6c757d; cursor: not-allowed; transform: none; }
-    #status-msg { margin-top: 20px; text-align: center; font-weight: 600; padding: 14px; border-radius: 12px; display: none; font-size: 15px; }
-    @media (max-width: 768px) { .app-card { padding: 30px; } .grid { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } }
-    @media (max-width: 480px) { body { padding: 0; } .app-card { border-radius: 0; padding: 25px 20px; min-height: 100vh; border: none; } }
+    .rupiah-wrapper span { position: absolute; left: 16px; font-weight: 700; color: var(--sub); font-size: 15px; }
+    .rupiah-wrapper input { padding-left: 48px; }
+    .submit-btn { background: var(--accent); color: white; border: none; padding: 18px; border-radius: 16px; font-size: 16px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 25px; letter-spacing: 0.5px; box-shadow: 0 10px 25px rgba(15, 47, 216, 0.2); }
+    .submit-btn:hover { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 12px 30px rgba(15, 47, 216, 0.3); }
+    .submit-btn:disabled { background: #6c757d; cursor: not-allowed; transform: none; box-shadow: none; }
+    #status-msg { margin-top: 20px; text-align: center; font-weight: 600; padding: 16px; border-radius: 14px; display: none; font-size: 15px; line-height: 1.5; border: 1px solid transparent; }
+    @media (max-width: 1024px) { .app-workspace { grid-template-columns: 1fr; gap: 35px; padding: 35px; } .panel-brand { border-right: none; border-bottom: 1px solid var(--border); padding-right: 0; padding-bottom: 35px; } .balance-wrapper { margin: 20px 0; } .brand-footer { display: none; } }
+    @media (max-width: 768px) { .grid-form { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } }
+    @media (max-width: 480px) { body { padding: 0; } .app-workspace { border-radius: 0; padding: 25px 20px; min-height: 100vh; border: none; } }
   </style>
 </head>
 <body id="main-body">
-  <div class="app-card">
-    <div class="header">
-      <h1>
-        <svg class="satset-logo" viewBox="0 0 1080 1080" version="1.1" xmlns="http://www.w3.org/2000/svg">
-          <path d="M0 0 C356.4 0 712.8 0 1080 0 C1080 356.4 1080 712.8 1080 1080 C723.6 1080 367.2 1080 0 1080 C0 723.6 0 367.2 0 0 Z " fill="#2022F2" transform="translate(0,0)"/>
-          <path d="M0 0 C1.51612169 0.99673253 3.01836745 2.01518645 4.5 3.0625 C6.0778125 4.17625 6.0778125 4.17625 7.6875 5.3125 C13.79419691 11.28349254 17.78293348 18.17426026 21.1328125 25.96875 C22.74053175 29.60678899 24.51425263 33.14087299 26.3125 36.6875 C29.13276341 42.27214049 31.85706116 47.89182912 34.5 53.5625 C36.99785962 58.92179727 39.57257824 64.22833184 42.25 69.5 C45.95695735 76.86718434 49.53598983 84.29493286 53.0625 91.75 C53.61196289 92.8855835 54.16142578 94.02116699 54.72753906 95.19116211 C55.23124023 96.2663208 55.73494141 97.34147949 56.25390625 98.44921875 C56.71095947 99.41045654 57.1680127 100.37169434 57.63891602 101.36206055 C58.62080355 104.44135116 58.50473401 106.0180486 57.5 109.0625 C55.6796875 111.23828125 55.6796875 111.23828125 53.375 113.375 C49.79319197 116.72752274 46.55699963 120.24083998 43.3515625 123.94604492 C40.33563596 127.39344302 37.20084883 130.72679109 34.0625 134.0625 C33.40507813 134.76310547 32.74765625 135.46371094 32.0703125 136.18554688 C28.22790313 140.26763128 24.32962471 144.27608579 20.32836914 148.203125 C18.55543886 150.00612099 16.8982273 151.86420467 15.25 153.78125 C11.60252906 157.975649 7.82371254 162.02900772 4 166.0625 C2.58840808 167.55716552 1.17695305 169.05196032 -0.234375 170.546875 C-0.94400391 171.29775391 -1.65363281 172.04863281 -2.38476562 172.82226562 C-10.64344875 181.56899651 -18.86488278 190.35007974 -27.01269531 199.20019531 C-30.82393515 203.33774866 -34.65855625 207.45298767 -38.5 211.5625 C-42.84878114 216.21508465 -47.18513136 220.87844473 -51.5 225.5625 C-56.40799332 230.89042858 -61.34649951 236.18920749 -66.29345703 241.48095703 C-70.4855303 245.96793845 -74.6522378 250.47745197 -78.80932617 254.99682617 C-83.76088419 260.36777173 -88.77792802 265.67691937 -93.80615234 270.97607422 C-101.64484556 279.11752666 -101.64484556 279.11752666 -108.5 288.0625 C-107.9143074 288.17456284 -107.32861481 288.28662567 -106.72517395 288.40208435 C-100.02522278 289.7099053 -93.39498577 291.23827503 -86.76171875 292.84765625 C-85.67792435 293.10880722 -84.59412994 293.36995819 -83.47749329 293.63902283 C-80.04705351 294.46586263 -76.61723741 295.29525206 -73.1875 296.125 C-69.73982894 296.95797658 -66.29202377 297.79038759 -62.84394836 298.62168884 C-60.70680231 299.13704339 -58.56989971 299.65340887 -56.43327332 300.1709137 C-55.46489029 300.40463181 -54.49650726 300.63834991 -53.4987793 300.87915039 C-52.65179977 301.08407608 -51.80482025 301.28900177 -50.93217468 301.50013733 C-48.46318898 302.07101137 -45.98726598 302.57809339 -43.5 303.0625 C-44.76073874 306.34006052 -46.15329102 309.43394083 -47.828125 312.51953125 C-48.29065674 313.37184326 -48.75318848 314.22415527 -49.22973633 315.10229492 C-49.73142334 316.0172876 -50.23311035 316.93228027 -50.75 317.875 C-51.27940186 318.84348877 -51.80880371 319.81197754 -52.35424805 320.80981445 C-56.7889144 328.87219707 -61.41127985 336.81631843 -66.07519531 344.74755859 C-72.45400347 355.62567355 -78.54067504 366.66161054 -84.63867188 377.69873047 C-93.42795142 393.58260947 -102.34731989 409.38534983 -111.5 425.0625 C-112.60036363 426.95046068 -113.70061885 428.83848455 -114.80078125 430.7265625 C-117.1533312 434.76266426 -119.50765203 438.79772596 -121.86328125 442.83203125 C-124.34236726 447.07796112 -126.81871634 451.32547038 -129.29296875 455.57421875 C-130.22435669 457.17293823 -130.22435669 457.17293823 -131.17456055 458.80395508 C-132.35229158 460.82564531 -133.52957117 462.84759863 -134.70629883 464.86987305 C-138.25706336 470.96287275 -141.85651313 477.02448729 -145.5 483.0625 C-146.7684907 479.25702791 -146.00721433 477.73663494 -144.828125 473.9296875 C-143.21656562 468.54164258 -141.71620439 463.15298804 -140.359375 457.6953125 C-140.18531128 456.99694275 -140.01124756 456.298573 -139.83190918 455.57904053 C-139.30269125 453.44899655 -138.77627244 451.3182734 -138.25 449.1875 C-137.88303672 447.70957973 -137.51585028 446.23171484 -137.1484375 444.75390625 C-136.26306435 441.19073582 -135.38066865 437.6268365 -134.5 434.0625 C-133.84 434.0625 -133.18 434.0625 -132.5 434.0625 C-131.71234097 419.76211269 -132.66000383 406.31067938 -142.578125 394.97265625 C-154.61182567 383.0123318 -171.00388623 376.82380458 -186.18554688 369.83691406 C-192.87272035 366.75814072 -199.51174765 363.62475393 -206.07641602 360.29199219 C-213.13630018 356.71778322 -220.25406379 353.26294432 -227.375 349.8125 C-228.0437616 349.48839142 -228.71252319 349.16428284 -229.40155029 348.83035278 C-238.70222985 344.32825106 -248.04362818 339.92985897 -257.4375 335.625 C-299.21637994 316.45516092 -299.21637994 316.45516092 -307.5 297.0625 C-307.85320312 296.26328125 -308.20640625 295.4640625 -308.5703125 294.640625 C-312.34705564 284.16730368 -311.912336 270.16317939 -307.890625 259.83984375 C-299.5911145 243.26413599 -286.24142282 236.04901873 -270.00390625 228.6875 C-266.21188502 226.92888146 -262.48006707 225.07278832 -258.75 223.1875 C-253.20666522 220.38878055 -247.62819587 217.68633457 -242 215.0625 C-236.62602652 212.55521233 -231.29316991 209.98613635 -226 207.3125 C-212.62188994 200.56306062 -199.08081582 194.12893726 -185.50805664 187.78125 C-182.16733789 186.21823007 -178.83325144 184.64136521 -175.5 183.0625 C-174.81083496 182.73830078 -174.12166992 182.41410156 -173.41162109 182.08007812 C-152.2979199 172.09498597 -137.16443731 159.01711462 -127.3125 137.5 C-126.35063793 135.44643772 -125.38838554 133.39305822 -124.42578125 131.33984375 C-123.93932129 130.29425293 -123.45286133 129.24866211 -122.95166016 128.17138672 C-120.6698798 123.2847081 -118.33625525 118.42331413 -116 113.5625 C-115.52030762 112.56226807 -115.04061523 111.56203613 -114.54638672 110.53149414 C-109.30667007 99.62329644 -103.9955697 88.74986508 -98.68661499 77.87524414 C-93.84621004 67.96023068 -89.03801092 58.03287458 -84.3125 48.0625 C-80.8016196 40.66450234 -77.12692561 33.39158533 -73.18359375 26.21484375 C-71.7081374 23.45221434 -70.44364973 20.67795188 -69.1875 17.8125 C-63.7997328 6.90955218 -53.07803926 -0.92613542 -42 -5.25 C-27.91445302 -9.59629598 -12.69562957 -7.33314723 0 0 Z " fill="#F7FA18" transform="translate(665,327)"/>
-          <path d="M0 0 C1.45047396 2.90094791 0.45356803 4.55972596 -0.4375 7.625 C-0.72496094 8.62789063 -1.01242187 9.63078125 -1.30859375 10.6640625 C-1.65083984 11.82035156 -1.65083984 11.82035156 -2 13 C-2.66 12.34 -3.32 11.68 -4 11 C-4.99 11.66 -5.98 12.32 -7 13 C-5.35821735 8.22390502 -2.73453298 4.20617096 0 0 Z " fill="#C8CB49" transform="translate(665,327)"/>
-          <path d="M0 0 C1.32 0.33 2.64 0.66 4 1 C2.66511872 4.59391114 1.03977277 7.75490696 -1 11 C-2.41687119 6.74938644 -1.19320039 4.28148375 0 0 Z " fill="#BEC054" transform="translate(423,721)"/>
-        </svg>
-        Satset Finance <small style="font-size: 13px; opacity: 0.5; font-weight:400;">Cloud</small>
-      </h1>
-      <button type="button" class="theme-btn" onclick="toggleMode()"><i id="mode-icon" class="fa-solid fa-moon"></i></button>
-    </div>
-    <form id="trackerForm" onsubmit="handleForm(event)">
-      <div class="grid">
-        <div class="form-group">
-          <label><i class="fa-regular fa-calendar-check"></i> Tanggal Transaksi</label>
-          <input type="text" id="tgl" required>
-        </div>
-        <div class="form-group">
-          <label><i class="fa-solid fa-wallet"></i> Portofolio Keuangan</label>
-          <select id="portSelect" onchange="updateKat()" required></select>
-          <input type="text" id="portNew" class="custom-input" style="display:none" placeholder="Ketik Portofolio Baru...">
-        </div>
-        <div class="form-group">
-          <label><i class="fa-solid fa-boxes-stacked"></i> Kategori Jurnal</label>
-          <select id="katSelect" onchange="checkKatNew()" required disabled>
-            <option value="" disabled selected>Pilih Portofolio Dahulu...</option>
-          </select>
-          <input type="text" id="katNew" class="custom-input" style="display:none" placeholder="Ketik Kategori Baru...">
-        </div>
-        <div class="form-group">
-          <label><i class="fa-solid fa-money-bill-transfer"></i> Jenis Pengeluaran</label>
-          <select id="mtd"><option>Non Tunai</option><option>Tunai</option></select>
-        </div>
-        <div class="form-group full-width">
-          <label><i class="fa-solid fa-receipt"></i> Informasi Pengeluaran/Pemasukan</label>
-          <input type="text" id="inf" placeholder="Contoh: Pembayaran Lisensi Server / Pembelian ATK" required>
-        </div>
-        <div class="form-group">
-          <label><i class="fa-solid fa-arrow-down" style="color:#10b981"></i> Uang Masuk (Rp)</label>
-          <div class="rupiah-wrapper">
-            <span>Rp</span>
-            <input type="text" id="msk" value="" placeholder="0" oninput="formatRupiah(this)">
-          </div>
-        </div>
-        <div class="form-group">
-          <label><i class="fa-solid fa-arrow-up" style="color:#ef4444"></i> Uang Keluar (Rp)</label>
-          <div class="rupiah-wrapper">
-            <span>Rp</span>
-            <input type="text" id="klr" value="" placeholder="0" oninput="formatRupiah(this)">
-          </div>
-        </div>
-        <div class="form-group full-width">
-          <label><i class="fa-solid fa-camera"></i> Upload Bukti Pembayaran / Nota</label>
-          <input type="file" id="fil" accept="image/*,application/pdf">
-        </div>
-        <div class="form-group full-width">
-          <label><i class="fa-solid fa-comment-dots"></i> Keterangan Tentang Pengeluaran</label>
-          <textarea id="ket" rows="2" placeholder="Catatan tambahan akuntansi..."></textarea>
+  <div class="app-workspace">
+    <div class="panel-brand">
+      <div class="brand-title">
+        <h1>
+          <svg class="satset-logo" viewBox="0 0 1080 1080" version="1.1" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 0 C356.4 0 712.8 0 1080 0 C1080 356.4 1080 712.8 1080 1080 C723.6 1080 367.2 1080 0 1080 C0 723.6 0 367.2 0 0 Z " fill="#2022F2" transform="translate(0,0)"/>
+            <path d="M0 0 C1.51612169 0.99673253 3.01836745 2.01518645 4.5 3.0625 C6.0778125 4.17625 6.0778125 4.17625 7.6875 5.3125 C13.79419691 11.28349254 17.78293348 18.17426026 21.1328125 25.96875 C22.74053175 29.60678899 24.51425263 33.14087299 26.3125 36.6875 C29.13276341 42.27214049 31.85706116 47.89182912 34.5 53.5625 C36.99785962 58.92179727 39.57257824 64.22833184 42.25 69.5 C45.95695735 76.86718434 49.53598983 84.29493286 53.0625 91.75 C53.61196289 92.8855835 54.16142578 94.02116699 54.72753906 95.19116211 C55.23124023 96.2663208 55.73494141 97.34147949 56.25390625 98.44921875 C56.71095947 99.41045654 57.1680127 100.37169434 57.63891602 101.36206055 C58.62080355 104.44135116 58.50473401 106.0180486 57.5 109.0625 C55.6796875 111.23828125 55.6796875 111.23828125 53.375 113.375 C49.79319197 116.72752274 46.55699963 120.24083998 43.3515625 123.94604492 C40.33563596 127.39344302 37.20084883 130.72679109 34.0625 134.0625 C33.40507813 134.76310547 32.74765625 135.46371094 32.0703125 136.18554688 C28.22790313 140.26763128 24.32962471 144.27608579 20.32836914 148.203125 C18.55543886 150.00612099 16.8982273 151.86420467 15.25 153.78125 C11.60252906 157.975649 7.82371254 162.02900772 4 166.0625 C2.58840808 167.55716552 1.17695305 169.05196032 -0.234375 170.546875 C-0.94400391 171.29775391 -1.65363281 172.04863281 -2.38476562 172.82226562 C-10.64344875 181.56899651 -18.86488278 190.35007974 -27.01269531 199.20019531 C-30.82393515 203.33774866 -34.65855625 207.45298767 -38.5 211.5625 C-42.84878114 216.21508465 -47.18513136 220.87844473 -51.5 225.5625 C-56.40799332 230.89042858 -61.34649951 236.18920749 -66.29345703 241.48095703 C-70.4855303 245.96793845 -74.6522378 250.47745197 -78.80932617 254.99682617 C-83.76088419 260.36777173 -88.77792802 265.67691937 -93.80615234 270.97607422 C-101.64484556 279.11752666 -101.64484556 279.11752666 -108.5 288.0625 C-107.9143074 288.17456284 -107.32861481 288.28662567 -106.72517395 288.40208435 C-100.02522278 289.7099053 -93.39498577 291.23827503 -86.76171875 292.84765625 C-85.67792435 293.10880722 -84.59412994 293.36995819 -83.47749329 293.63902283 C-80.04705351 294.46586263 -76.61723741 295.29525206 -73.1875 296.125 C-69.73982894 296.95797658 -66.29202377 297.79038759 -62.84394836 298.62168884 C-60.70680231 299.13704339 -58.56989971 299.65340887 -56.43327332 300.1709137 C-55.46489029 300.40463181 -54.49650726 300.63834991 -53.4987793 300.87915039 C-52.65179977 301.08407608 -51.80482025 301.28900177 -50.93217468 301.50013733 C-48.46318898 302.07101137 -45.98726598 302.57809339 -43.5 303.0625 C-44.76073874 306.34006052 -46.15329102 309.43394083 -47.828125 312.51953125 C-48.29065674 313.37184326 -48.75318848 314.22415527 -49.22973633 315.10229492 C-49.73142334 316.0172876 -50.23311035 316.93228027 -50.75 317.875 C-51.27940186 318.84348877 -51.80880371 319.81197754 -52.35424805 320.80981445 C-56.7889144 328.87219707 -61.41127985 336.81631843 -66.07519531 344.74755859 C-72.45400347 355.62567355 -78.54067504 366.66161054 -84.63867188 377.69873047 C-93.42795142 393.58260947 -102.34731989 409.38534983 -111.5 425.0625 C-112.60036363 426.95046068 -113.70061885 428.83848455 -114.80078125 430.7265625 C-117.1533312 434.76266426 -119.50765203 438.79772596 -121.86328125 442.83203125 C-124.34236726 447.07796112 -126.81871634 451.32547038 -129.29296875 455.57421875 C-130.22435669 457.17293823 -130.22435669 457.17293823 -131.17456055 458.80395508 C-132.35229158 460.82564531 -133.52957117 462.84759863 -134.70629883 464.86987305 C-138.25706336 470.96287275 -141.85651313 477.02448729 -145.5 483.0625 C-146.7684907 479.25702791 -146.00721433 477.73663494 -144.828125 473.9296875 C-143.21656562 468.54164258 -141.71620439 463.15298804 -140.359375 457.6953125 C-140.18531128 456.99694275 -140.01124756 456.298573 -139.83190918 455.57904053 C-139.30269125 453.44899655 -138.77627244 451.3182734 -138.25 449.1875 C-137.88303672 447.70957973 -137.51585028 446.23171484 -137.1484375 444.75390625 C-136.26306435 441.19073582 -135.38066865 437.6268365 -134.5 434.0625 C-133.84 434.0625 -133.18 434.0625 -132.5 434.0625 C-131.71234097 419.76211269 -132.66000383 406.31067938 -142.578125 394.97265625 C-154.61182567 383.0123318 -171.00388623 376.82380458 -186.18554688 369.83691406 C-192.87272035 366.75814072 -199.51174765 363.62475393 -206.07641602 360.29199219 C-213.13630018 356.71778322 -220.25406379 353.26294432 -227.375 349.8125 C-228.0437616 349.48839142 -228.71252319 349.16428284 -229.40155029 348.83035278 C-238.70222985 344.32825106 -248.04362818 339.92985897 -257.4375 335.625 C-299.21637994 316.45516092 -299.21637994 316.45516092 -307.5 297.0625 C-307.85320312 296.26328125 -308.20640625 295.4640625 -308.5703125 294.640625 C-312.34705564 284.16730368 -311.912336 270.16317939 -307.890625 259.83984375 C-299.5911145 243.26413599 -286.24142282 236.04901873 -270.00390625 228.6875 C-266.21188502 226.92888146 -262.48006707 225.07278832 -258.75 223.1875 C-253.20666522 220.38878055 -247.62819587 217.68633457 -242 215.0625 C-236.62602652 212.55521233 -231.29316991 209.98613635 -226 207.3125 C-212.62188994 200.56306062 -199.08081582 194.12893726 -185.50805664 187.78125 C-182.16733789 186.21823007 -178.83325144 184.64136521 -175.5 183.0625 C-174.81083496 182.73830078 -174.12166992 182.41410156 -173.41162109 182.08007812 C-152.2979199 172.09498597 -137.16443731 159.01711462 -127.3125 137.5 C-126.35063793 135.44643772 -125.38838554 133.39305822 -124.42578125 131.33984375 C-123.93932129 130.29425293 -123.45286133 129.24866211 -122.95166016 128.17138672 C-120.6698798 123.2847081 -118.33625525 118.42331413 -116 113.5625 C-115.52030762 112.56226807 -115.04061523 111.56203613 -114.54638672 110.53149414 C-109.30667007 99.62329644 -103.9955697 88.74986508 -98.68661499 77.87524414 C-93.84621004 67.96023068 -89.03801092 58.03287458 -84.3125 48.0625 C-80.8016196 40.66450234 -77.12692561 33.39158533 -73.18359375 26.21484375 C-71.7081374 23.45221434 -70.44364973 20.67795188 -69.1875 17.8125 C-63.7997328 6.90955218 -53.07803926 -0.92613542 -42 -5.25 C-27.91445302 -9.59629598 -12.69562957 -7.33314723 0 0 Z " fill="#F7FA19" transform="translate(567.5,248.9375)"/>
+            <path d="M0 0 C1.45047396 2.90094791 0.45356803 4.55972596 -0.4375 7.625 C-0.72496094 8.62789063 -1.01242187 9.63078125 -1.30859375 10.6640625 C-1.65083984 11.82035156 -1.65083984 11.82035156 -2 13 C-2.66 12.34 -3.32 11.68 -4 11 C-4.99 11.66 -5.98 12.32 -7 13 C-5.35821735 8.22390502 -2.73453298 4.20617096 0 0 Z " fill="#C8CB49" transform="translate(665,327)"/>
+            <path d="M0 0 C1.32 0.33 2.64 0.66 4 1 C2.66511872 4.59391114 1.03977277 7.75490696 -1 11 C-2.41687119 6.74938644 -1.19320039 4.28148375 0 0 Z " fill="#BEC054" transform="translate(423,721)"/>
+          </svg>
+          Satset Finance <small style="font-size: 13px; opacity: 0.5; font-weight:400;">v4.0</small>
+        </h1>
+        <button type="button" class="theme-btn" onclick="toggleMode()"><i id="mode-icon" class="fa-solid fa-moon"></i></button>
+      </div>
+      <div class="balance-wrapper">
+        <div class="balance-box">
+          <span class="balance-label"><i class="fa-solid fa-scale-balanced"></i> <span id="balance-title">Pilih Portofolio</span></span>
+          <span id="main-balance" class="balance-amount">Rp 0</span>
+          <div id="balance-alert" class="critical-alert"><i class="fa-solid fa-triangle-exclamation"></i> Warning: Saldo menipis (≤ Rp400k)</div>
         </div>
       </div>
-      <button type="submit" id="btn" class="submit-btn">REKAM TRANSAKSI KEUANGAN</button>
-      <div id="status-msg"></div>
-    </form>
+      <div class="brand-footer"><i class="fa-solid fa-shield-halved"></i> Multi-Ledger Database Connection</div>
+    </div>
+    <div class="panel-form">
+      <form id="trackerForm" onsubmit="handleForm(event)">
+        <div class="grid-form">
+          <div class="form-group">
+            <label><i class="fa-regular fa-calendar-check"></i> Tanggal Transaksi</label>
+            <input type="text" id="tgl" required>
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-wallet"></i> Portofolio Keuangan</label>
+            <select id="portSelect" onchange="updateKat()" required></select>
+            <input type="text" id="portNew" class="custom-input" style="display:none" placeholder="Ketik Portofolio Baru...">
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-boxes-stacked"></i> Kategori Jurnal</label>
+            <select id="katSelect" onchange="checkKatNew()" required disabled>
+              <option value="" disabled selected>Pilih Portofolio Dahulu...</option>
+            </select>
+            <input type="text" id="katNew" class="custom-input" style="display:none" placeholder="Ketik Kategori Baru...">
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-money-bill-transfer"></i> Jenis Pengeluaran</label>
+            <select id="mtd"><option>Non Tunai</option><option>Tunai</option></select>
+          </div>
+          <div class="form-group full-width">
+            <label><i class="fa-solid fa-receipt"></i> Informasi Pengeluaran/Pemasukan</label>
+            <input type="text" id="inf" placeholder="Contoh: Pembayaran Lisensi Server" required>
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-arrow-down" style="color:#10b981"></i> Uang Masuk (Rp)</label>
+            <div class="rupiah-wrapper">
+              <span>Rp</span>
+              <input type="text" id="msk" value="" placeholder="0" oninput="formatRupiah(this)">
+            </div>
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-arrow-up" style="color:#ef4444"></i> Uang Keluar (Rp)</label>
+            <div class="rupiah-wrapper">
+              <span>Rp</span>
+              <input type="text" id="klr" value="" placeholder="0" oninput="formatRupiah(this)">
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label><i class="fa-solid fa-camera"></i> Upload Bukti Pembayaran / Nota</label>
+            <input type="file" id="fil" accept="image/*,application/pdf">
+          </div>
+          <div class="form-group full-width">
+            <label><i class="fa-solid fa-comment-dots"></i> Keterangan Tentang Pengeluaran</label>
+            <textarea id="ket" rows="2" placeholder="Catatan opsional..."></textarea>
+          </div>
+        </div>
+        <button type="submit" id="btn" class="submit-btn">REKAM TRANSAKSI</button>
+        <div id="status-msg"></div>
+      </form>
+    </div>
   </div>
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxqp_CX7oHFDSe4wxQURSAzAAW3A7XKVFF88FCWBZ4eeyB-jFRT_an_1iU9PNgQgs_k/exec"; 
-    let mapping = {};
+    let mapping = {}; let balancesData = {};
     window.onload = () => {
       flatpickr("#tgl", { altInput: true, altFormat: "d/m/Y", dateFormat: "Y-m-d", defaultDate: "today", disableMobile: "true" });
-      fetch(API_URL + "?action=getDropdown").then(response => response.json()).then(data => {
-        mapping = data;
+      fetch(API_URL + "?action=getInitialData").then(response => response.json()).then(data => {
+        mapping = data.mapping; balancesData = data.balances;
         const ps = document.getElementById('portSelect');
         ps.innerHTML = '<option value="" disabled selected>Pilih Portofolio...</option>';
-        Object.keys(data).forEach(p => ps.innerHTML += `<option value="${p}">${p}</option>`);
+        Object.keys(mapping).forEach(p => ps.innerHTML += `<option value="${p}">${p}</option>`);
         ps.innerHTML += '<option value="NEW" style="color:var(--accent); font-weight:bold;">➕ Tambah Baru...</option>';
       }).catch(error => console.error('Error fetching data:', error));
     };
     function toggleMode() {
-      const b = document.getElementById('main-body');
-      const i = document.getElementById('mode-icon');
-      b.classList.toggle('dark-mode');
-      i.className = b.classList.contains('dark-mode') ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+      const b = document.getElementById('main-body'); const i = document.getElementById('mode-icon');
+      b.classList.toggle('dark-mode'); i.className = b.classList.contains('dark-mode') ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
     }
     function updateKat() {
-      const ps = document.getElementById('portSelect');
-      const ks = document.getElementById('katSelect');
-      const pn = document.getElementById('portNew');
-      const kn = document.getElementById('katNew');
-      ks.innerHTML = '<option value="" disabled selected>Pilih Kategori...</option>';
-      ks.disabled = false; pn.style.display = ps.value === "NEW" ? "block" : "none";
+      const ps = document.getElementById('portSelect'); const ks = document.getElementById('katSelect');
+      const pn = document.getElementById('portNew'); const kn = document.getElementById('katNew');
+      const title = document.getElementById('balance-title'); const balBox = document.getElementById('main-balance');
+      const alertBox = document.getElementById('balance-alert');
+      ks.innerHTML = '<option value="" disabled selected>Pilih Kategori...</option>'; ks.disabled = false;
+      pn.style.display = ps.value === "NEW" ? "block" : "none";
       if(ps.value === "NEW") {
-        ks.innerHTML += '<option value="NEW" selected>➕ Tambah Baru...</option>';
-        ks.disabled = true; kn.style.display = "block";
+        ks.innerHTML += '<option value="NEW" selected>➕ Tambah Baru...</option>'; ks.disabled = true; kn.style.display = "block";
+        title.innerText = "Portofolio Baru"; balBox.innerText = "Rp 0"; alertBox.style.display = "none";
       } else {
         const cats = mapping[ps.value] || [];
         cats.forEach(c => ks.innerHTML += `<option value="${c}">${c}</option>`);
-        ks.innerHTML += '<option value="NEW" style="color:var(--accent); font-weight:bold;">➕ Tambah Baru...</option>';
-        kn.style.display = "none";
+        ks.innerHTML += '<option value="NEW" style="color:var(--accent); font-weight:bold;">➕ Tambah Baru...</option>'; kn.style.display = "none";
+        title.innerHTML = `Kas: <span class="balance-port-name">${ps.value}</span>`;
+        const balAmount = balancesData[ps.value] || 0; balBox.innerText = "Rp " + balAmount.toLocaleString('id-ID');
+        if(balAmount <= 400000 && balAmount > 0) { alertBox.style.display = "flex"; } else { alertBox.style.display = "none"; }
       }
     }
     function checkKatNew() { document.getElementById('katNew').style.display = document.getElementById('katSelect').value === "NEW" ? "block" : "none"; }
     function formatRupiah(inputElement) {
-      let cleanValue = inputElement.value.replace(/\D/g, '');
-      if (cleanValue === '') { inputElement.value = ''; return; }
+      let cleanValue = inputElement.value.replace(/\D/g, ''); if (cleanValue === '') { inputElement.value = ''; return; }
       inputElement.value = parseInt(cleanValue, 10).toLocaleString('id-ID');
     }
     function handleForm(e) {
-      e.preventDefault();
-      const b = document.getElementById('btn');
-      const s = document.getElementById('status-msg');
-      const rawMsk = document.getElementById('msk').value.replace(/\./g, '');
-      const rawKlr = document.getElementById('klr').value.replace(/\./g, '');
-      const mVal = parseFloat(rawMsk) || 0;
-      const kVal = parseFloat(rawKlr) || 0;
+      e.preventDefault(); const b = document.getElementById('btn'); const s = document.getElementById('status-msg');
+      const rawMsk = document.getElementById('msk').value.replace(/\./g, ''); const rawKlr = document.getElementById('klr').value.replace(/\./g, '');
+      const mVal = parseFloat(rawMsk) || 0; const kVal = parseFloat(rawKlr) || 0;
       if (mVal === 0 && kVal === 0) {
-        s.style.display = "block"; s.style.background = "#fee2e2"; s.style.color = "#991b1b";
-        s.innerText = "Error: Nominal Uang Masuk atau Keluar harus diisi!"; return;
+        s.style.display = "block"; s.style.background = "#fee2e2"; s.style.color = "#991b1b"; s.innerText = "Error: Nominal Uang Masuk atau Keluar harus diisi!"; return;
       }
-      b.disabled = true; s.style.display = "block";
-      s.style.background = "var(--border)"; s.style.color = "var(--text-main)";
-      s.innerText = "⚡ Menyinkronkan Data via API Server...";
+      b.disabled = true; s.style.display = "block"; s.style.background = "var(--border)"; s.style.color = "var(--text-main)"; s.style.borderColor = "transparent"; s.innerText = "⚡ Menyinkronkan Data via API Server...";
       const f = document.getElementById('fil').files[0];
       if (f) {
-        const r = new FileReader();
-        r.onload = ev => sendDataViaAPI(ev.target.result, f.name, mVal, kVal);
-        r.readAsDataURL(f);
+        const r = new FileReader(); r.onload = ev => sendDataViaAPI(ev.target.result, f.name, mVal, kVal); r.readAsDataURL(f);
       } else { sendDataViaAPI(null, null, mVal, kVal); }
     }
     function sendDataViaAPI(fd, fn, mVal, kVal) {
-      const ps = document.getElementById('portSelect').value;
-      const ks = document.getElementById('katSelect').value;
+      const ps = document.getElementById('portSelect').value; const ks = document.getElementById('katSelect').value;
       const payload = {
-        tanggal: document.getElementById('tgl').value,
-        portofolio: ps === "NEW" ? document.getElementById('portNew').value : ps,
+        tanggal: document.getElementById('tgl').value, portofolio: ps === "NEW" ? document.getElementById('portNew').value : ps,
         kategori: (ks === "NEW" || ps === "NEW") ? document.getElementById('katNew').value : ks,
         info: document.getElementById('inf').value, uangMasuk: mVal, uangKeluar: kVal,
-        metode: document.getElementById('mtd').value, keterangan: document.getElementById('ket').value,
-        fileData: fd, fileName: fn
+        metode: document.getElementById('mtd').value, keterangan: document.getElementById('ket').value, fileData: fd, fileName: fn
       };
       fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) })
       .then(response => response.json())
       .then(result => {
         if (result.status === 'success') {
-          const s = document.getElementById('status-msg');
-          s.style.background = "#dcfce7"; s.style.color = "#166534";
-          s.innerHTML = `<i class="fa-solid fa-square-check"></i> Jurnal Terekam! <br> Saldo: <b>${result.message}</b>`;
-          document.getElementById('trackerForm').reset();
-          document.getElementById('tgl')._flatpickr.setDate(new Date());
-          document.getElementById('portNew').style.display = "none";
-          document.getElementById('katNew').style.display = "none";
-          document.getElementById('katSelect').disabled = true;
-          fetch(API_URL + "?action=getDropdown").then(res => res.json()).then(d => { mapping = d; });
+          const s = document.getElementById('status-msg'); s.style.background = "#dcfce7"; s.style.color = "#166534"; s.style.borderColor = "#bbf7d0";
+          s.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; gap:4px;"><span style="letter-spacing: 0.5px;"><i class="fa-solid fa-circle-check" style="margin-right: 5px;"></i> Entri Jurnal Berhasil Dibukukan</span><span style="font-size:13.5px; font-weight:500; opacity:0.85; margin-top: 2px;">Saldo Berjalan Terkini: <b style="font-size:15px; color: #14532d; opacity:1;">${result.message.saldoString}</b></span></div>`;
+          document.getElementById('main-balance').innerText = result.message.saldoString;
+          const alertBox = document.getElementById('balance-alert');
+          if(result.message.saldoAngka <= 400000 && result.message.saldoAngka > 0) { alertBox.style.display = "flex"; } else { alertBox.style.display = "none"; }
+          document.getElementById('trackerForm').reset(); document.getElementById('tgl')._flatpickr.setDate(new Date());
+          document.getElementById('portNew').style.display = "none"; document.getElementById('katNew').style.display = "none"; document.getElementById('katSelect').disabled = true;
+          fetch(API_URL + "?action=getInitialData").then(res => res.json()).then(d => { mapping = d.mapping; balancesData = d.balances; });
         } else { throw new Error(result.message); }
       })
       .catch(error => {
-        const s = document.getElementById('status-msg');
-        s.style.background = "#fee2e2"; s.style.color = "#991b1b";
-        s.innerText = "Gagal Terhubung ke API: " + error.message;
+        const s = document.getElementById('status-msg'); s.style.background = "#fee2e2"; s.style.color = "#991b1b"; s.style.borderColor = "#fca5a5"; s.innerText = "Gagal Terhubung ke API: " + error.message;
       })
       .finally(() => { document.getElementById('btn').disabled = false; });
     }
