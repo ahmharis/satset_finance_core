@@ -70,15 +70,27 @@
     .submit-btn:disabled { background: #6c757d; cursor: not-allowed; transform: none; box-shadow: none; }
     #status-msg { margin-top: 15px; text-align: center; font-weight: 600; padding: 14px; border-radius: 12px; display: none; font-size: 14px; line-height: 1.5; border: 1px solid transparent; flex-shrink: 0; }
     
+    /* --- OPTIMASI RESPONSIF LAYAR SENTUH (MOBILE & TABLET) --- */
     @media (max-width: 1024px) { 
       body { height: auto; overflow: auto; padding: 0; }
-      .app-workspace { grid-template-columns: 1fr; gap: 30px; padding: 30px; max-width: 100%; min-height: 100vh; border-radius: 0; border: none; height: auto; max-height: none; overflow-y: visible; } 
+      .app-workspace { grid-template-columns: 1fr; gap: 20px; padding: 25px; width: 100%; max-width: 100%; min-height: 100vh; border-radius: 0; border: none; height: auto; } 
       .panel-form { overflow-y: visible; padding-right: 0; }
-      .panel-brand { border-right: none; border-bottom: 1px solid var(--border); padding-right: 0; padding-bottom: 30px; } 
-      .balance-wrapper { margin: 15px 0; } 
+      .panel-brand { border-right: none; border-bottom: 1px solid var(--border); padding-right: 0; padding-bottom: 20px; height: auto; } 
+      .balance-wrapper { margin: 10px 0; padding: 10px 0; } 
       .brand-footer { display: none; } 
     }
-    @media (max-width: 768px) { .grid-form { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } }
+    @media (max-width: 768px) { 
+      .grid-form { grid-template-columns: 1fr; gap: 12px; } 
+      .full-width { grid-column: span 1; } 
+      .brand-title h1 { font-size: 21px; gap: 10px; } /* Mencegah judul turun 2 baris */
+      .satset-logo { width: 36px; height: 36px; } /* Menyesuaikan ukuran logo di HP */
+      .theme-btn { width: 40px; height: 40px; font-size: 15px; }
+      .balance-amount { font-size: 26px; } /* Sedikit mengecilkan nominal angka */
+    }
+    @media (max-width: 480px) {
+      .app-workspace { padding: 20px 15px; }
+      .brand-title { margin-bottom: 15px; }
+    }
   </style>
 </head>
 <body id="main-body">
