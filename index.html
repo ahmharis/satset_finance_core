@@ -47,11 +47,13 @@
     /* Panel Form Scrollable Independen */
     .panel-form { display: flex; flex-direction: column; justify-content: flex-start; overflow-y: auto; padding-right: 15px; }
     
-    /* Custom Scrollbar agar Elegan */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--sub); }
+    .panel-form {
+      -ms-overflow-style: none;  /* Untuk Internet Explorer dan Edge */
+      scrollbar-width: none;  /* Untuk Firefox */
+    }
+    .panel-form::-webkit-scrollbar { 
+      display: none; /* Untuk Chrome, Safari, dan Opera */
+    }
     
     .grid-form { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
     .form-group { display: flex; flex-direction: column; }
