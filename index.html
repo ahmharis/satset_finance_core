@@ -26,6 +26,15 @@
     .balance-amount { font-size: 28px; font-weight: 900; color: var(--text-main); letter-spacing: -0.5px; word-break: break-all; }
     .critical-alert { background: #fee2e2; color: #b91c1c; font-size: 12px; font-weight: 700; padding: 8px 12px; border-radius: 8px; display: flex; align-items: center; gap: 6px; margin-top: 5px; animation: pulse 2s infinite; display: none; }
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+    .export-btn { background: transparent; border: 2px solid var(--border); color: var(--text-main); padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 15px; display: none; }
+    .export-btn:hover { background: var(--border); }
+    .export-controls { display: none; flex-direction: column; gap: 12px; margin-top: 15px; padding: 16px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; }
+    .export-controls label { margin: 0; font-size: 10.5px; }
+    .export-controls select { padding: 10px; font-size: 13px; font-weight: 600; border-radius: 10px; }
+    .export-actions { display: flex; gap: 10px; }
+    .export-actions button { flex: 1; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; }
+    .btn-unduh { background: var(--accent); color: white; }
+    .btn-batal { background: transparent; border: 1px solid var(--border) !important; color: var(--text-main); }
     .brand-footer { font-size: 12px; color: var(--sub); opacity: 0.7; font-weight: 500; margin-top: 30px; }
     .panel-form { display: flex; flex-direction: column; justify-content: center; }
     .grid-form { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
@@ -59,7 +68,7 @@
             <path d="M0 0 C1.45047396 2.90094791 0.45356803 4.55972596 -0.4375 7.625 C-0.72496094 8.62789063 -1.01242187 9.63078125 -1.30859375 10.6640625 C-1.65083984 11.82035156 -1.65083984 11.82035156 -2 13 C-2.66 12.34 -3.32 11.68 -4 11 C-4.99 11.66 -5.98 12.32 -7 13 C-5.35821735 8.22390502 -2.73453298 4.20617096 0 0 Z " fill="#C8CB49" transform="translate(665,327)"/>
             <path d="M0 0 C1.32 0.33 2.64 0.66 4 1 C2.66511872 4.59391114 1.03977277 7.75490696 -1 11 C-2.41687119 6.74938644 -1.19320039 4.28148375 0 0 Z " fill="#BEC054" transform="translate(423,721)"/>
           </svg>
-          Satset Finance <small style="font-size: 13px; opacity: 0.5; font-weight:400;">v4.0</small>
+          Satset Finance Core
         </h1>
         <button type="button" class="theme-btn" onclick="toggleMode()"><i id="mode-icon" class="fa-solid fa-moon"></i></button>
       </div>
@@ -68,6 +77,15 @@
           <span class="balance-label"><i class="fa-solid fa-scale-balanced"></i> <span id="balance-title">Pilih Portofolio</span></span>
           <span id="main-balance" class="balance-amount">Rp 0</span>
           <div id="balance-alert" class="critical-alert"><i class="fa-solid fa-triangle-exclamation"></i> Warning: Saldo menipis (≤ Rp400k)</div>
+          <button type="button" id="exportBtn" class="export-btn" onclick="prepareDownload()"><i class="fa-solid fa-file-csv"></i> Download Laporan</button>
+          <div id="export-controls" class="export-controls">
+            <label><i class="fa-solid fa-filter"></i> Pilih Periode Laporan:</label>
+            <select id="export-period"></select>
+            <div class="export-actions">
+              <button type="button" class="btn-unduh" onclick="executeDownload()"><i class="fa-solid fa-download"></i> Unduh</button>
+              <button type="button" class="btn-batal" onclick="cancelDownload()">Batal</button>
+            </div>
+          </div>
         </div>
       </div>
       <div class="brand-footer"><i class="fa-solid fa-shield-halved"></i> Multi-Ledger Database Connection</div>
@@ -130,6 +148,8 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxqp_CX7oHFDSe4wxQURSAzAAW3A7XKVFF88FCWBZ4eeyB-jFRT_an_1iU9PNgQgs_k/exec"; 
     let mapping = {}; let balancesData = {};
+    let currentExportData = []; let currentExportPort = "";
+
     window.onload = () => {
       flatpickr("#tgl", { altInput: true, altFormat: "d/m/Y", dateFormat: "Y-m-d", defaultDate: "today", disableMobile: "true" });
       fetch(API_URL + "?action=getInitialData").then(response => response.json()).then(data => {
@@ -140,20 +160,25 @@
         ps.innerHTML += '<option value="NEW" style="color:var(--accent); font-weight:bold;">➕ Tambah Baru...</option>';
       }).catch(error => console.error('Error fetching data:', error));
     };
+
     function toggleMode() {
       const b = document.getElementById('main-body'); const i = document.getElementById('mode-icon');
       b.classList.toggle('dark-mode'); i.className = b.classList.contains('dark-mode') ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
     }
+
     function updateKat() {
       const ps = document.getElementById('portSelect'); const ks = document.getElementById('katSelect');
       const pn = document.getElementById('portNew'); const kn = document.getElementById('katNew');
       const title = document.getElementById('balance-title'); const balBox = document.getElementById('main-balance');
-      const alertBox = document.getElementById('balance-alert');
+      const alertBox = document.getElementById('balance-alert'); const expBtn = document.getElementById('exportBtn');
+      
       ks.innerHTML = '<option value="" disabled selected>Pilih Kategori...</option>'; ks.disabled = false;
       pn.style.display = ps.value === "NEW" ? "block" : "none";
+      cancelDownload();
+      
       if(ps.value === "NEW") {
         ks.innerHTML += '<option value="NEW" selected>➕ Tambah Baru...</option>'; ks.disabled = true; kn.style.display = "block";
-        title.innerText = "Portofolio Baru"; balBox.innerText = "Rp 0"; alertBox.style.display = "none";
+        title.innerText = "Portofolio Baru"; balBox.innerText = "Rp 0"; alertBox.style.display = "none"; expBtn.style.display = "none";
       } else {
         const cats = mapping[ps.value] || [];
         cats.forEach(c => ks.innerHTML += `<option value="${c}">${c}</option>`);
@@ -161,13 +186,85 @@
         title.innerHTML = `Kas: <span class="balance-port-name">${ps.value}</span>`;
         const balAmount = balancesData[ps.value] || 0; balBox.innerText = "Rp " + balAmount.toLocaleString('id-ID');
         if(balAmount <= 400000 && balAmount > 0) { alertBox.style.display = "flex"; } else { alertBox.style.display = "none"; }
+        expBtn.style.display = "flex";
       }
     }
+
     function checkKatNew() { document.getElementById('katNew').style.display = document.getElementById('katSelect').value === "NEW" ? "block" : "none"; }
+
     function formatRupiah(inputElement) {
       let cleanValue = inputElement.value.replace(/\D/g, ''); if (cleanValue === '') { inputElement.value = ''; return; }
       inputElement.value = parseInt(cleanValue, 10).toLocaleString('id-ID');
     }
+
+    function prepareDownload() {
+      const portName = document.getElementById('portSelect').value;
+      const expBtn = document.getElementById('exportBtn');
+      expBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sinkronisasi Data...';
+      expBtn.disabled = true;
+
+      fetch(API_URL + "?action=downloadReport&portofolio=" + encodeURIComponent(portName))
+        .then(res => res.json())
+        .then(response => {
+          if(response.error) { alert(response.error); cancelDownload(); return; }
+          currentExportData = response.data; currentExportPort = portName;
+          const periods = new Set();
+          for(let i = 1; i < currentExportData.length; i++) { if(currentExportData[i][10]) periods.add(currentExportData[i][10]); }
+          const sel = document.getElementById('export-period');
+          sel.innerHTML = '<option value="ALL">Semua Periode Transaksi</option>';
+          periods.forEach(p => { sel.innerHTML += `<option value="${p}">${p}</option>`; });
+          expBtn.style.display = 'none'; document.getElementById('export-controls').style.display = 'flex';
+        })
+        .catch(err => { alert("Gagal mengunduh: " + err); cancelDownload(); });
+    }
+
+    function executeDownload() {
+      const selPeriod = document.getElementById('export-period').value;
+      let finalData = [];
+      if(selPeriod === "ALL") {
+         finalData = currentExportData;
+      } else {
+         finalData.push(currentExportData[0]); 
+         for(let i = 1; i < currentExportData.length; i++) { if(currentExportData[i][10] === selPeriod) finalData.push(currentExportData[i]); }
+      }
+      let csvContent = "";
+      finalData.forEach(row => { let csvRow = row.map(item => `"${String(item).replace(/"/g, '""')}"`).join(","); csvContent += csvRow + "\r\n"; });
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      let filename = `Laporan_Satset_${currentExportPort.replace(/\s+/g, '_')}`;
+      if(selPeriod !== "ALL") filename += `_${selPeriod.replace(/\s+/g, '_')}`;
+      link.setAttribute("download", filename + `.csv`);
+      link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      cancelDownload(); 
+    }
+
+    function cancelDownload() {
+      document.getElementById('export-controls').style.display = 'none';
+      const expBtn = document.getElementById('exportBtn');
+      expBtn.innerHTML = '<i class="fa-solid fa-file-csv"></i> Download Laporan';
+      expBtn.style.display = 'flex'; expBtn.disabled = false;
+    }
+
+    function compressImage(file, callback) {
+      const reader = new FileReader(); reader.readAsDataURL(file);
+      reader.onload = function(event) {
+        const img = new Image(); img.src = event.target.result;
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 1024; const MAX_HEIGHT = 1024;
+          let width = img.width; let height = img.height;
+          if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } } 
+          else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
+          canvas.width = width; canvas.height = height;
+          const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+          callback(dataUrl);
+        }
+      }
+    }
+
     function handleForm(e) {
       e.preventDefault(); const b = document.getElementById('btn'); const s = document.getElementById('status-msg');
       const rawMsk = document.getElementById('msk').value.replace(/\./g, ''); const rawKlr = document.getElementById('klr').value.replace(/\./g, '');
@@ -175,17 +272,20 @@
       if (mVal === 0 && kVal === 0) {
         s.style.display = "block"; s.style.background = "#fee2e2"; s.style.color = "#991b1b"; s.innerText = "Error: Nominal Uang Masuk atau Keluar harus diisi!"; return;
       }
-      b.disabled = true; s.style.display = "block"; s.style.background = "var(--border)"; s.style.color = "var(--text-main)"; s.style.borderColor = "transparent"; s.innerText = "⚡ Menyinkronkan Data via API Server...";
+      b.disabled = true; s.style.display = "block"; s.style.background = "var(--border)"; s.style.color = "var(--text-main)"; s.style.borderColor = "transparent"; 
+      s.innerText = "⚡ Sedang Mengompresi & Menyinkronkan Data...";
       const f = document.getElementById('fil').files[0];
       if (f) {
-        const r = new FileReader(); r.onload = ev => sendDataViaAPI(ev.target.result, f.name, mVal, kVal); r.readAsDataURL(f);
+        if (f.type.startsWith('image/')) { compressImage(f, function(compressedData) { sendDataViaAPI(compressedData, f.name, mVal, kVal); }); } 
+        else { const r = new FileReader(); r.onload = ev => sendDataViaAPI(ev.target.result, f.name, mVal, kVal); r.readAsDataURL(f); }
       } else { sendDataViaAPI(null, null, mVal, kVal); }
     }
+
     function sendDataViaAPI(fd, fn, mVal, kVal) {
       const ps = document.getElementById('portSelect').value; const ks = document.getElementById('katSelect').value;
       const payload = {
         tanggal: document.getElementById('tgl').value, portofolio: ps === "NEW" ? document.getElementById('portNew').value : ps,
-        kategori: (ks === "NEW" || ps === "NEW") ? document.getElementById('katNew').value : ks,
+        kategori: (ks === "Upload Baru" || ps === "NEW") ? document.getElementById('katNew').value : ks,
         info: document.getElementById('inf').value, uangMasuk: mVal, uangKeluar: kVal,
         metode: document.getElementById('mtd').value, keterangan: document.getElementById('ket').value, fileData: fd, fileName: fn
       };
