@@ -330,6 +330,7 @@
     }
 
     // Ekspor Data Laporan ke CSV
+// Ekspor Data Laporan ke CSV dengan Formatter Rentang Tanggal Cantik
     function prepareDownload() {
       const portName = document.getElementById('portSelect').value;
       const expBtn = document.getElementById('exportBtn');
@@ -341,11 +342,59 @@
         .then(response => {
           if(response.error) { alert(response.error); cancelDownload(); return; }
           currentExportData = response.data; currentExportPort = portName;
-          const periods = new Set();
-          for(let i = 1; i < currentExportData.length; i++) { if(currentExportData[i][10]) periods.add(currentExportData[i][10]); }
+          
+          // 1. Helper untuk membaca format tanggal hybrid (Safe-Parsing)
+          function parseDateString(dateStr) {
+            if (!dateStr) return null;
+            dateStr = dateStr.toString().trim();
+            if (dateStr.includes('-')) {
+              return new Date(dateStr); // Format YYYY-MM-DD
+            } else if (dateStr.includes('/')) {
+              let parts = dateStr.split('/');
+              return new Date(parts[2], parts[1] - 1, parts[0]); // Format DD/MM/YYYY
+            }
+            return null;
+          }
+
+          // 2. Helper untuk merakit teks rentang tanggal lokalisasi Indonesia
+          function formatPeriodLabel(minDate, maxDate) {
+            const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            const d1 = minDate.getDate(), m1 = months[minDate.getMonth()], y1 = minDate.getFullYear();
+            const d2 = maxDate.getDate(), m2 = months[maxDate.getMonth()], y2 = maxDate.getFullYear();
+
+            if (d1 === d2 && m1 === m2 && y1 === y2) return `${d1} ${m1} ${y1}`;
+            if (m1 === m2 && y1 === y2) return `${d1} - ${d2} ${m1} ${y1}`;
+            if (y1 === y2) return `${d1} ${m1} - ${d2} ${m2} ${y1}`;
+            return `${d1} ${m1} ${y1} - ${d2} ${m2} ${y2}`;
+          }
+
+          // 3. Mengelompokkan data dan mencari tanggal terkecil & terbesar di setiap periode
+          const periodGroups = {};
+          for(let i = 1; i < currentExportData.length; i++) {
+            const dateRaw = currentExportData[i][0];
+            const periodRaw = currentExportData[i][10]; // Nilai YYYY-MM dari database
+            if (!periodRaw) continue;
+
+            const parsedDate = parseDateString(dateRaw);
+            if (!parsedDate || isNaN(parsedDate.getTime())) continue;
+
+            if (!periodGroups[periodRaw]) {
+              periodGroups[periodRaw] = { min: parsedDate, max: parsedDate };
+            } else {
+              if (parsedDate < periodGroups[periodRaw].min) periodGroups[periodRaw].min = parsedDate;
+              if (parsedDate > periodGroups[periodRaw].max) periodGroups[periodRaw].max = parsedDate;
+            }
+          }
+
+          // 4. Suntikkan hasil kalkulasi rentang tanggal ke dalam Dropdown UX
           const sel = document.getElementById('export-period');
           sel.innerHTML = '<option value="ALL">Semua Periode Transaksi</option>';
-          periods.forEach(p => { sel.innerHTML += `<option value="${p}">${p}</option>`; });
+          
+          Object.keys(periodGroups).sort().forEach(p => {
+            const label = formatPeriodLabel(periodGroups[p].min, periodGroups[p].max);
+            sel.innerHTML += `<option value="${p}">${label}</option>`;
+          });
+
           expBtn.style.display = 'none'; document.getElementById('export-controls').style.display = 'flex';
         })
         .catch(err => { alert("Gagal mengunduh: " + err); cancelDownload(); });
