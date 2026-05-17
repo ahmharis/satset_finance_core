@@ -22,8 +22,21 @@
     .brand-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; }
     .brand-title h1 { font-size: 26px; margin: 0; font-weight: 800; display: flex; align-items: center; gap: 14px; }
     
-    .logo-container { width: 44px; height: 44px; flex-shrink: 0; border-radius: 12px; display: flex; justify-content: center; align-items: center; overflow: hidden; box-shadow: 0 4px 14px rgba(32, 34, 242, 0.25); background: transparent; }
-    .satset-logo { width: 100%; height: 100%; display: block; }
+    .logo-container { 
+      width: 44px; min-width: 44px; 
+      height: 44px; min-height: 44px; 
+      flex-shrink: 0; 
+      border-radius: 12px; 
+      display: flex; justify-content: center; align-items: center; 
+      overflow: hidden; 
+      box-shadow: 0 4px 14px rgba(32, 34, 242, 0.25); 
+      background: #2022F2; /* Mengisi latar dengan biru murni */
+    }
+    .satset-logo { 
+      width: 100%; height: 100%; 
+      display: block; 
+      transform: scale(0.85); /* Memperkecil vektor 15% ke tengah agar aman dari sudut lengkung */
+    }
     
     .theme-btn { width: 44px; height: 44px; border-radius: 14px; background: var(--border); color: var(--text-main); display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; font-size: 16px; flex-shrink: 0; }
     .theme-btn:hover { transform: scale(1.05); }
@@ -114,6 +127,19 @@
               <path d="M0 0 C1.32 0.33 2.64 0.66 4 1 C2.66511872 4.59391114 1.03977277 7.75490696 -1 11 C-2.41687119 6.74938644 -1.19320039 4.28148375 0 0 Z" fill="#BEC054" transform="translate(423,721)"/>
             </svg>
           </div>
+		  <script>
+            (function() {
+              const svgElement = document.querySelector('.satset-logo');
+              if (svgElement) {
+                const svgData = new XMLSerializer().serializeToString(svgElement);
+                const encodedData = window.btoa(unescape(encodeURIComponent(svgData)));
+                const faviconLink = document.createElement('link');
+                faviconLink.rel = 'icon'; faviconLink.type = 'image/svg+xml';
+                faviconLink.href = 'data:image/svg+xml;base64,' + encodedData;
+                document.head.appendChild(faviconLink);
+              }
+            })();
+          </script>
           Satset Finance Core
         </h1>
         <button type="button" class="theme-btn" onclick="toggleMode()"><i id="mode-icon" class="fa-solid fa-moon"></i></button>
