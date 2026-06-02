@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <!-- Pustaka Parsing CSV Tercepat di Browser -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
     :root { --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); --card-bg: rgba(255, 255, 255, 0.9); --text-main: #050a30; --text-sub: #4a5568; --accent: #0f2fd8; --border: #e2e8f0; --input-bg: #ffffff; --shadow: 0 20px 50px rgba(5, 10, 48, 0.05); --balance-bg: #f8fafc; --balance-border: #e2e8f0; }
@@ -165,12 +166,26 @@
             <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleCsvUpload(event)">
           </div>
           
-          <div id="export-controls" class="export-controls">
-            <label><i class="fa-solid fa-filter"></i> Pilih Periode Laporan:</label>
-            <select id="export-period"></select>
-            <div class="export-actions">
-              <button type="button" class="btn-unduh" onclick="executeDownload()"><i class="fa-solid fa-download"></i> Unduh</button>
-              <button type="button" class="btn-batal" onclick="cancelDownload()">Batal</button>
+          <div id="export-controls" class="export-controls" style="display: none; flex-direction: column; gap: 12px; padding: 16px; background: var(--balance-bg); border: 1px solid var(--border); border-radius: 16px; margin-top: 10px;">
+            <label><i class="fa-solid fa-sliders"></i> Jenis Filter Unduhan:</label>
+            <select id="export-mode-select" onchange="toggleExportMode()" style="padding: 8px; font-size: 13px; font-weight: 600; border-radius: 8px;">
+              <option value="MONTHLY">Berdasarkan Bulan</option>
+              <option value="CUSTOM_RANGE">Rentang Tanggal Kustom</option>
+            </select>
+
+            <div id="wrapper-mode-monthly" style="display: flex; flex-direction: column; gap: 6px;">
+              <label style="font-size: 10.5px;"><i class="fa-solid fa-calendar-days"></i> Pilih Bulan:</label>
+              <select id="export-period" style="padding: 10px; font-size: 13px; font-weight: 600; border-radius: 10px;"></select>
+            </div>
+
+            <div id="wrapper-mode-custom" style="display: none; flex-direction: column; gap: 6px;">
+              <label style="font-size: 10.5px;"><i class="fa-regular fa-calendar-plus"></i> Pilih Jarak Tanggal (Dari - Sampai):</label>
+              <input type="text" id="export-date-range" placeholder="Klik untuk pilih rentang..." style="padding: 10px; font-size: 13px; font-weight: 600; border-radius: 10px; background: var(--input-bg);">
+            </div>
+
+            <div class="export-actions" style="display: flex; gap: 10px; margin-top: 5px;">
+              <button type="button" class="btn-unduh" onclick="executeDownload()" style="flex: 1; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; background: var(--accent); color: white;"><i class="fa-solid fa-download"></i> Unduh</button>
+              <button type="button" class="btn-batal" onclick="cancelDownload()" style="flex: 1; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--text-main);">Batal</button>
             </div>
           </div>
         </div>
@@ -248,6 +263,9 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbx1oWLp14M2VOP7rouSWBFOgNahDt8TY_uIwtNxeXyrVG8erYSIKWABcmK-XXwO42zj/exec"; 
     let mapping = {}; let balancesData = {};
     let currentExportData = []; let currentExportPort = "";
+    
+    // PERBAIKAN: Variabel kalender wajib ditambahkan di sini
+    let exportDateInstance = null; 
     
     // Variabel Penampung State Importer
     let csvRawHeaders = []; let csvRawRows = [];
@@ -329,8 +347,32 @@
       inputElement.value = parseInt(cleanValue, 10).toLocaleString('id-ID');
     }
 
-    // Ekspor Data Laporan ke CSV
-// Ekspor Data Laporan ke CSV dengan Formatter Rentang Tanggal Cantik
+    // ==================================================
+    // FITUR UNDUH LAPORAN (BULAN & CUSTOM RANGE)
+    // ==================================================
+    function toggleExportMode() {
+      const mode = document.getElementById('export-mode-select').value;
+      const mWrapper = document.getElementById('wrapper-mode-monthly');
+      const cWrapper = document.getElementById('wrapper-mode-custom');
+      
+      if (mode === 'MONTHLY') {
+        mWrapper.style.display = 'flex';
+        cWrapper.style.display = 'none';
+      } else {
+        mWrapper.style.display = 'none';
+        cWrapper.style.display = 'flex';
+        if (!exportDateInstance) {
+          exportDateInstance = flatpickr("#export-date-range", {
+            mode: "range",
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "d/m/Y",
+            disableMobile: "true"
+          });
+        }
+      }
+    }
+
     function prepareDownload() {
       const portName = document.getElementById('portSelect').value;
       const expBtn = document.getElementById('exportBtn');
@@ -343,83 +385,109 @@
           if(response.error) { alert(response.error); cancelDownload(); return; }
           currentExportData = response.data; currentExportPort = portName;
           
-          // 1. Helper untuk membaca format tanggal hybrid (Safe-Parsing)
-          function parseDateString(dateStr) {
-            if (!dateStr) return null;
-            dateStr = dateStr.toString().trim();
-            if (dateStr.includes('-')) {
-              return new Date(dateStr); // Format YYYY-MM-DD
-            } else if (dateStr.includes('/')) {
-              let parts = dateStr.split('/');
-              return new Date(parts[2], parts[1] - 1, parts[0]); // Format DD/MM/YYYY
-            }
-            return null;
-          }
-
-          // 2. Helper untuk merakit teks rentang tanggal lokalisasi Indonesia
-          function formatPeriodLabel(minDate, maxDate) {
-            const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-            const d1 = minDate.getDate(), m1 = months[minDate.getMonth()], y1 = minDate.getFullYear();
-            const d2 = maxDate.getDate(), m2 = months[maxDate.getMonth()], y2 = maxDate.getFullYear();
-
-            if (d1 === d2 && m1 === m2 && y1 === y2) return `${d1} ${m1} ${y1}`;
-            if (m1 === m2 && y1 === y2) return `${d1} - ${d2} ${m1} ${y1}`;
-            if (y1 === y2) return `${d1} ${m1} - ${d2} ${m2} ${y1}`;
-            return `${d1} ${m1} ${y1} - ${d2} ${m2} ${y2}`;
-          }
-
-          // 3. Mengelompokkan data dan mencari tanggal terkecil & terbesar di setiap periode
-          const periodGroups = {};
+          const monthsName = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+          const uniquePeriods = new Set();
+          
           for(let i = 1; i < currentExportData.length; i++) {
-            const dateRaw = currentExportData[i][0];
-            const periodRaw = currentExportData[i][10]; // Nilai YYYY-MM dari database
-            if (!periodRaw) continue;
-
-            const parsedDate = parseDateString(dateRaw);
-            if (!parsedDate || isNaN(parsedDate.getTime())) continue;
-
-            if (!periodGroups[periodRaw]) {
-              periodGroups[periodRaw] = { min: parsedDate, max: parsedDate };
-            } else {
-              if (parsedDate < periodGroups[periodRaw].min) periodGroups[periodRaw].min = parsedDate;
-              if (parsedDate > periodGroups[periodRaw].max) periodGroups[periodRaw].max = parsedDate;
-            }
+            if(currentExportData[i][10]) uniquePeriods.add(currentExportData[i][10].toString().trim());
           }
-
-          // 4. Suntikkan hasil kalkulasi rentang tanggal ke dalam Dropdown UX
+          
           const sel = document.getElementById('export-period');
           sel.innerHTML = '<option value="ALL">Semua Periode Transaksi</option>';
           
-          Object.keys(periodGroups).sort().forEach(p => {
-            const label = formatPeriodLabel(periodGroups[p].min, periodGroups[p].max);
-            sel.innerHTML += `<option value="${p}">${label}</option>`;
+          Array.from(uniquePeriods).sort().forEach(p => {
+            let parts = p.split("-");
+            if(parts.length === 2) {
+              let monthIndex = parseInt(parts[1], 10) - 1;
+              let labelCantik = `${monthsName[monthIndex]} ${parts[0]}`;
+              sel.innerHTML += `<option value="${p}">${labelCantik}</option>`;
+            }
           });
 
-          expBtn.style.display = 'none'; document.getElementById('export-controls').style.display = 'flex';
+          document.getElementById('export-mode-select').value = 'MONTHLY';
+          document.getElementById('wrapper-mode-monthly').style.display = 'flex';
+          document.getElementById('wrapper-mode-custom').style.display = 'none';
+          if(exportDateInstance) exportDateInstance.clear();
+
+          expBtn.style.display = 'none'; 
+          document.getElementById('export-controls').style.display = 'flex';
         })
-        .catch(err => { alert("Gagal mengunduh: " + err); cancelDownload(); });
+        .catch(err => { alert("Gagal mengambil data laporan: " + err); cancelDownload(); });
     }
 
     function executeDownload() {
-      const selPeriod = document.getElementById('export-period').value;
+      const mode = document.getElementById('export-mode-select').value;
       let finalData = [];
-      if(selPeriod === "ALL") {
-         finalData = currentExportData;
-      } else {
-         finalData.push(currentExportData[0]); 
-         for(let i = 1; i < currentExportData.length; i++) { if(currentExportData[i][10] === selPeriod) finalData.push(currentExportData[i]); }
+      let filenameSuffix = "";
+
+      finalData.push(currentExportData[0]);
+
+      function toDateObject(dateStr) {
+        if (!dateStr) return null;
+        dateStr = dateStr.toString().trim();
+        if (dateStr.includes('-')) return new Date(dateStr);
+        if (dateStr.includes('/')) {
+          let parts = dateStr.split('/');
+          return new Date(parts[2], parts[1] - 1, parts[0]);
+        }
+        return null;
       }
+
+      if (mode === 'MONTHLY') {
+        const selPeriod = document.getElementById('export-period').value;
+        if (selPeriod === "ALL") {
+          finalData = currentExportData;
+          filenameSuffix = "_Semua_Periode";
+        } else {
+          for (let i = 1; i < currentExportData.length; i++) {
+            if (currentExportData[i][10] === selPeriod) finalData.push(currentExportData[i]);
+          }
+          filenameSuffix = `_Periode_${selPeriod}`;
+        }
+      } else {
+        if (!exportDateInstance || exportDateInstance.selectedDates.length < 2) {
+          alert("Silakan tentukan Tanggal Mulai dan Tanggal Selesai pada kalender terlebih dahulu!");
+          return;
+        }
+        
+        const startDate = exportDateInstance.selectedDates[0];
+        startDate.setHours(0,0,0,0);
+        const endDate = exportDateInstance.selectedDates[1];
+        endDate.setHours(23,59,59,999);
+
+        for (let i = 1; i < currentExportData.length; i++) {
+          let trxDate = toDateObject(currentExportData[i][0]);
+          if (trxDate && trxDate >= startDate && trxDate <= endDate) {
+            finalData.push(currentExportData[i]);
+          }
+        }
+        
+        const formatFileDate = (d) => d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+        filenameSuffix = `_Custom_${formatFileDate(startDate)}_ke_${formatFileDate(endDate)}`;
+      }
+
+      if (finalData.length <= 1) {
+        alert("Tidak ada data transaksi yang ditemukan pada filter tanggal tersebut.");
+        return;
+      }
+
       let csvContent = "";
-      finalData.forEach(row => { let csvRow = row.map(item => `"${String(item).replace(/"/g, '""')}"`).join(","); csvContent += csvRow + "\r\n"; });
+      finalData.forEach(row => { 
+        let csvRow = row.map(item => `"${String(item).replace(/"/g, '""')}"`).join(","); 
+        csvContent += csvRow + "\r\n"; 
+      });
+
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement("a");
       const url = URL.createObjectURL(blob);
       link.setAttribute("href", url);
-      let filename = `Laporan_Satset_${currentExportPort.replace(/\s+/g, '_')}`;
-      if(selPeriod !== "ALL") filename += `_${selPeriod.replace(/\s+/g, '_')}`;
-      link.setAttribute("download", filename + `.csv`);
-      link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link);
-      cancelDownload(); 
+      link.setAttribute("download", `Laporan_${currentExportPort.replace(/\s+/g, '_')}${filenameSuffix}.csv`);
+      link.style.visibility = 'hidden'; 
+      document.body.appendChild(link); 
+      link.click(); 
+      document.body.removeChild(link);
+      
+      cancelDownload();
     }
 
     function cancelDownload() {
